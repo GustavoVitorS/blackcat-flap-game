@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#67c9f5" />
+  <meta name="description" content="Black Cat Flap V3 — a responsive HTML5 arcade game where a persistent giant cat follows the player, telegraphs fair bite cycles, and power-up coins help the escape." />
+  <title>Black Cat Flap</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="game-shell" aria-label="Black Cat Flap game">
+    <canvas id="game" aria-label="Game canvas"></canvas>
+
+    <section id="hud" class="hud" aria-live="polite">
+      <div class="score-pill"><span class="paw">🐾</span><span>Score:</span><strong id="score">0</strong></div>
+      <div id="hazard" class="hazard-pill" hidden><span class="hazard-dot"></span><span id="hazard-text">GIANT CAT</span></div>
+      <button id="pause-btn" class="icon-btn" type="button" aria-label="Pause game" title="Pause">Ⅱ</button>
+    </section>
+
+    <section id="powerups" class="powerups" aria-live="polite" hidden></section>
+    <div id="powerup-toast" class="powerup-toast" role="status" aria-live="polite"></div>
+
+    <section id="start-panel" class="panel is-visible" aria-labelledby="game-title">
+      <div class="card">
+        <p class="eyebrow">ARCADE / HTML5</p>
+        <h1 id="game-title">BLACK CAT FLAP</h1>
+        <p class="subtitle">Dodge the pipes while the giant cat follows you from the start. Read its bite timing and use temporary power coins to survive.</p>
+        <div class="mechanic-callout">
+          <span class="mini-cat">😺</span>
+          <p><strong>Persistent chaser:</strong> the giant cat follows your flight immediately. When it prepares to bite, tracking locks in place, the dotted danger ring appears, and you get time to escape before the jaws become lethal.</p>
+        </div>
+        <div class="powerup-guide" aria-label="Power-up coin guide">
+          <span><b>↻</b> Revive</span>
+          <span><b>◆</b> Shield</span>
+          <span><b>★</b> Immortal</span>
+          <span><b>◐</b> White Cat</span>
+        </div>
+        <button id="play-btn" class="primary-btn" type="button">PLAY</button>
+        <p class="controls"><strong>Desktop:</strong> Space / W / ↑ / Click &nbsp;•&nbsp; <strong>Mobile:</strong> Tap anywhere or use the paw button<br />The first pipe carries a power coin. Bite warnings lock the target so you can escape up or down; powers remain temporary.</p>
+      </div>
+    </section>
+
+    <section id="gameover-panel" class="panel" aria-labelledby="gameover-title">
+      <div class="card compact">
+        <p class="eyebrow">RUN OVER</p>
+        <h2 id="gameover-title">CAUGHT!</h2>
+        <div class="result-grid">
+          <div><span>Score</span><strong id="final-score">0</strong></div>
+          <div><span>Best</span><strong id="best-score">0</strong></div>
+        </div>
+        <p id="death-reason" class="death-reason">The giant cat snapped shut.</p>
+        <button id="retry-btn" class="primary-btn" type="button">TRY AGAIN</button>
+      </div>
+    </section>
+
+    <section id="pause-panel" class="panel" aria-labelledby="pause-title">
+      <div class="card compact">
+        <p class="eyebrow">GAME PAUSED</p>
+        <h2 id="pause-title">PAUSED</h2>
+        <button id="resume-btn" class="primary-btn" type="button">RESUME</button>
+      </div>
+    </section>
+
+    <div id="mobile-tip" class="mobile-tip">TAP TO FLAP</div>
+    <button id="flap-btn" class="flap-btn" type="button" aria-label="Flap">
+      <span aria-hidden="true">🐾</span>
+    </button>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
