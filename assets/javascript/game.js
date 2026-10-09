@@ -795,20 +795,22 @@
   function getMouthGeometry(cat) {
     const r = cat.r;
     return {
-      x: cat.x - r * .08,
-      y: cat.y + r * .22,
-      rx: r * .58,
-      ry: Math.max(r * .085, r * (.17 + .33 * cat.openness)),
+      // Slightly lower and a touch narrower so the mouth feels anchored to the muzzle
+      // instead of stretching too high into the face.
+      x: cat.x,
+      y: cat.y + r * .225,
+      rx: r * .50,
+      ry: Math.max(r * .095, r * (.145 + .255 * cat.openness)),
     };
   }
 
   function getBiteGeometry(cat) {
     const r = cat.r;
     return {
-      x: cat.x - r * .08,
-      y: cat.y + r * .22,
-      rx: r * .52,
-      ry: r * .40,
+      x: cat.x,
+      y: cat.y + r * .205,
+      rx: r * .49,
+      ry: r * .36,
     };
   }
 
@@ -904,14 +906,15 @@
 
     ctx.save();
     const grad = ctx.createLinearGradient(x, 0, x + w, 0);
-    grad.addColorStop(0, "#4d9d27");
-    grad.addColorStop(.18, "#7bd33d");
-    grad.addColorStop(.46, "#93ea45");
-    grad.addColorStop(.76, "#57ad28");
-    grad.addColorStop(1, "#38841f");
+    // V4 pipe palette: centered on the requested #DE1A58 magenta.
+    grad.addColorStop(0, "#9f103d");
+    grad.addColorStop(.16, "#c5154d");
+    grad.addColorStop(.46, "#DE1A58");
+    grad.addColorStop(.72, "#ee3d73");
+    grad.addColorStop(1, "#a70f3e");
 
     ctx.fillStyle = grad;
-    ctx.strokeStyle = "#2a6520";
+    ctx.strokeStyle = "#7d0b31";
     ctx.lineWidth = edge;
     ctx.fillRect(x, y, w, h);
     ctx.strokeRect(x, y, w, h);
@@ -1114,9 +1117,8 @@
     ctx.save();
     ctx.translate(cat.x, cat.y);
 
-    // Shadow halo
-    ctx.fillStyle = "rgba(61, 61, 73, .12)";
-    ctx.beginPath(); ctx.ellipse(0, r*.18, r*.93, r*.88, 0, 0, Math.PI*2); ctx.fill();
+    // V4: no background halo behind the giant cat.
+    // Keeping the silhouette clean makes the face read as part of the scene instead of a sticker.
 
     // Ears behind face
     ctx.fillStyle = "#a56f62";
@@ -1156,31 +1158,66 @@
     ctx.beginPath(); ctx.ellipse(-r*.21, r*.02, r*.29, r*.23, -.08, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(r*.21, r*.02, r*.29, r*.23, .08, 0, Math.PI*2); ctx.fill();
 
-    // Lower jaw physically drops while the mouth is open, making the bite cycle
-    // readable even without looking at the HUD countdown.
-    const jawDrop = r * (.035 + .12 * open);
+    // Symmetric lower jaw. It moves vertically instead of drifting sideways,
+    // so the closing animation looks like a real bite rather than two offset shapes.
+    const jawDrop = r * (.025 + .115 * open);
     ctx.fillStyle = "#a97466";
     ctx.strokeStyle = "#6b433e";
     ctx.lineWidth = Math.max(2, r * .017);
     ctx.beginPath();
-    ctx.ellipse(0, r * .36 + jawDrop, r * .49, r * .22, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, r * .34 + jawDrop, r * .47, r * .205, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    // Mouth cavity changes with openness.
-    ctx.fillStyle = "#4a2428";
+    // Mouth cavity: cleaner, more symmetric and slightly lower on the muzzle.
+    // This avoids the previous "bugged" impression where the bite looked tilted.
+    const mcx = mouth.x - cat.x;
+    const mcy = mouth.y - cat.y;
+    const mrx = mouth.rx;
+    const mry = mouth.ry;
+    const topLipY = mcy - mry * .52;
+    const sideY = mcy - mry * .12;
+    const bottomY = mcy + mry * .88;
+    ctx.fillStyle = "#3f2830";
     ctx.beginPath();
-    ctx.ellipse(mouth.x - cat.x, mouth.y - cat.y, mouth.rx, mouth.ry, 0, 0, Math.PI*2);
+    ctx.moveTo(mcx - mrx * .86, sideY);
+    ctx.quadraticCurveTo(mcx - mrx * .70, topLipY - r * .035, mcx, topLipY);
+    ctx.quadraticCurveTo(mcx + mrx * .70, topLipY - r * .035, mcx + mrx * .86, sideY);
+    ctx.quadraticCurveTo(mcx + mrx * .93, mcy + mry * .34, mcx + mrx * .48, bottomY);
+    ctx.quadraticCurveTo(mcx, bottomY + r * .012, mcx - mrx * .48, bottomY);
+    ctx.quadraticCurveTo(mcx - mrx * .93, mcy + mry * .34, mcx - mrx * .86, sideY);
+    ctx.closePath();
     ctx.fill();
 
-    // Tongue appears mostly when open.
-    if (open > .13) {
-      ctx.fillStyle = "#e7857f";
-      ctx.beginPath(); ctx.ellipse(0, r*(.30 + .17*open), r*.31, r*(.08 + .12*open), 0, 0, Math.PI*2); ctx.fill();
+    // Upper and lower gum curves make the bite read as a real mouth layout.
+    ctx.strokeStyle = "rgba(145,84,88,.82)";
+    ctx.lineWidth = Math.max(2, r * .018);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(mcx - mrx * .66, topLipY + r * .045);
+    ctx.quadraticCurveTo(mcx, topLipY - r * .020, mcx + mrx * .66, topLipY + r * .045);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(mcx - mrx * .38, mcy + mry * .48);
+    ctx.quadraticCurveTo(mcx, mcy + mry * .62, mcx + mrx * .38, mcy + mry * .48);
+    ctx.stroke();
+
+    // Tongue follows the lower jaw and stays centered without crowding the teeth.
+    if (open > .10) {
+      ctx.fillStyle = "#d98787";
+      ctx.beginPath();
+      ctx.ellipse(mcx, mcy + mry * .52, mrx * .42, Math.max(r * .040, mry * .24), 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(119,66,73,.30)";
+      ctx.lineWidth = Math.max(1.5, r * .010);
+      ctx.beginPath();
+      ctx.moveTo(mcx, mcy + mry * .42);
+      ctx.lineTo(mcx, mcy + mry * .65);
+      ctx.stroke();
     }
 
-    // Teeth anchored to upper/lower jaws.
-    drawTeeth(r, open);
+    // Rounded, irregular teeth arranged along stable gum curves.
+    drawTeeth(r, open, { x: mcx, y: mcy, rx: mrx, ry: mry, topLipY });
 
     // Nose
     ctx.fillStyle = "#aa6761";
@@ -1197,27 +1234,65 @@
       ctx.beginPath(); ctx.moveTo(r*.36, r*(.02+dy)); ctx.lineTo(r*.68, r*(.01+dy)); ctx.stroke();
     }
 
-    // Mouth danger telegraph: the dotted ellipse shows the actual bite zone before it becomes lethal.
+    // Stronger bite telegraph. The large outer ring is only a warning marker;
+    // the real lethal hitbox remains the smaller geometry used by collision code.
     if (cat.phase === "warning" || cat.phase === "closing") {
       ctx.save();
-      ctx.strokeStyle = cat.phase === "closing" ? "rgba(255,91,58,.92)" : "rgba(255,222,92,.88)";
-      ctx.lineWidth = Math.max(2, r * .014);
-      ctx.setLineDash([r * .045, r * .035]);
-      ctx.globalAlpha = .68 + Math.sin(game.time * 10) * .18;
+      const closing = cat.phase === "closing";
+      const pulse = .5 + .5 * Math.sin(game.time * (closing ? 18 : 11));
+      const cx = mouth.x - cat.x;
+      const cy = mouth.y - cat.y;
+      const outerRx = r * (.67 + pulse * .025);
+      const outerRy = r * (.51 + pulse * .018);
+
+      // Transparent danger wash.
+      ctx.fillStyle = closing ? "rgba(255,55,74,.10)" : "rgba(255,223,76,.09)";
       ctx.beginPath();
-      ctx.ellipse(mouth.x - cat.x, mouth.y - cat.y, r * .52, r * .40, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, outerRx, outerRy, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Thick solid inner ring.
+      ctx.strokeStyle = closing ? "rgba(255,48,73,.96)" : "rgba(255,220,57,.96)";
+      ctx.lineWidth = Math.max(4, r * .026);
+      ctx.setLineDash([]);
+      ctx.globalAlpha = .78 + pulse * .20;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, r * .57, r * .43, 0, 0, Math.PI * 2);
       ctx.stroke();
+
+      // Bigger dashed outer ring, visible even when the cat overlaps scenery.
+      ctx.lineWidth = Math.max(3, r * .020);
+      ctx.setLineDash([r * .075, r * .045]);
+      ctx.globalAlpha = .72 + pulse * .24;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, outerRx, outerRy, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Four corner brackets reinforce exactly where the bite is about to happen.
+      ctx.setLineDash([]);
+      ctx.lineWidth = Math.max(4, r * .024);
+      ctx.lineCap = "round";
+      const bx = outerRx * .82, by = outerRy * .75, len = r * .11;
+      for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(cx + sx * bx, cy + sy * by);
+        ctx.lineTo(cx + sx * (bx - len), cy + sy * by);
+        ctx.moveTo(cx + sx * bx, cy + sy * by);
+        ctx.lineTo(cx + sx * bx, cy + sy * (by - len));
+        ctx.stroke();
+      }
       ctx.restore();
 
       if (cat.phase === "warning") {
         ctx.save();
         const up = cat.escapeDirection === "UP";
-        const ay = (mouth.y - cat.y) + (up ? -r * .58 : r * .62);
-        ctx.globalAlpha = .72 + Math.sin(game.time * 9) * .20;
-        ctx.fillStyle = "#fff6b8";
-        ctx.strokeStyle = "rgba(82,47,42,.72)";
-        ctx.lineWidth = Math.max(2, r * .012);
-        ctx.font = `900 ${Math.max(24, r * .18)}px ui-rounded, system-ui, sans-serif`;
+        const ay = (mouth.y - cat.y) + (up ? -r * .69 : r * .72);
+        const pulse = .5 + .5 * Math.sin(game.time * 10);
+        ctx.globalAlpha = .82 + pulse * .18;
+        ctx.fillStyle = "#fff3a0";
+        ctx.strokeStyle = "rgba(71,34,41,.92)";
+        ctx.lineWidth = Math.max(3, r * .018);
+        ctx.font = `1000 ${Math.max(30, r * .235)}px ui-rounded, system-ui, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.strokeText(up ? "↑" : "↓", mouth.x - cat.x, ay);
@@ -1264,31 +1339,47 @@
     ctx.restore();
   }
 
-  function drawTeeth(r, open) {
-    const topY = r * (.09 + .02 * (1-open));
-    const lowerY = r * (.36 * open + .16);
-    const toothW = r * .065;
-    const toothH = r * (.11 + .04*open);
+  function drawTeeth(r, open, mouth) {
+    const { x: cx, y: cy, rx, ry, topLipY } = mouth;
+    const topBase = topLipY + r * .050;
+    const bottomBase = cy + ry * .48;
 
-    ctx.fillStyle = "#fff6e8";
-    ctx.strokeStyle = "#8b625d";
-    ctx.lineWidth = r*.009;
+    ctx.fillStyle = "#fff8ef";
+    ctx.strokeStyle = "rgba(112,72,72,.62)";
+    ctx.lineWidth = Math.max(1.1, r * .0075);
+    ctx.lineJoin = "round";
 
-    const xs = [-.42,-.30,-.18,-.06,.06,.18,.30,.42];
-    for (let i = 0; i < xs.length; i++) {
-      const x = xs[i] * r;
-      const h = toothH * (i===0 || i===7 ? 1.25 : 1);
+    const upper = [
+      [-.60, .16, .98], [-.36, .13, .82], [-.13, .11, .74],
+      [ .13, .11, .74], [ .36, .13, .82], [ .60, .16, .98],
+    ];
+    const lower = [
+      [-.42, .12, .78], [-.14, .105, .70], [ .14, .105, .70], [ .42, .12, .78],
+    ];
+
+    const drawTooth = (x, baseY, halfW, height, dir) => {
+      const tipY = baseY + dir * height;
       ctx.beginPath();
-      ctx.moveTo(x - toothW*.48, topY);
-      ctx.lineTo(x + toothW*.48, topY);
-      ctx.lineTo(x, topY + h);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.moveTo(x - halfW, baseY);
+      ctx.quadraticCurveTo(x - halfW * .30, baseY + dir * height * .40, x, tipY);
+      ctx.quadraticCurveTo(x + halfW * .30, baseY + dir * height * .40, x + halfW, baseY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    };
 
-      ctx.beginPath();
-      ctx.moveTo(x - toothW*.45, lowerY);
-      ctx.lineTo(x + toothW*.45, lowerY);
-      ctx.lineTo(x, lowerY - h*.82);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
+    for (const [nx, size, length] of upper) {
+      const x = cx + nx * rx;
+      const arch = Math.cos(nx * Math.PI * .5) * r * .018;
+      const h = r * size * (.66 + .20 * open) * length;
+      drawTooth(x, topBase - arch, r * size * .26, h, 1);
+    }
+
+    for (const [nx, size, length] of lower) {
+      const x = cx + nx * rx;
+      const arch = Math.cos(nx * Math.PI * .5) * r * .015;
+      const h = r * size * (.60 + .16 * open) * length;
+      drawTooth(x, bottomBase + arch, r * size * .25, h, -1);
     }
   }
 

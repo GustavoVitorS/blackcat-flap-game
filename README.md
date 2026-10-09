@@ -1,12 +1,22 @@
-# Black Cat Flap — Persistent Chaser V3
+# Black Cat Flap — Persistent Chaser V4
 
 A responsive **HTML5 / CSS / JavaScript** arcade game inspired by the tap-to-fly obstacle genre. The Black Cat still dodges pipes, but the main threat is now a **giant open-mouth cat that is present from the beginning of the run and continuously follows the player**.
 
 The project is fully static and ready for **GitHub Pages**. No framework, backend, build step, API, or external image dependency is required.
 
-## V3 — Persistent giant cat
+## V4 visual polish
 
-V2 could delay the giant cat for too long because its spawn depended on the pipe and coin state. V3 removes that problem completely.
+- Removed the blue/gray halo behind the giant cat.
+- Rebuilt the mouth so the upper and lower jaws close on the same center line.
+- Replaced the rigid saw-like teeth with fewer rounded teeth attached to curved gum lines.
+- Enlarged the bite telegraph with a thick inner ring, a larger dashed outer ring and four warning brackets.
+- Increased the top bite-warning banner for better readability on desktop and mobile.
+- Changed every pipe to a magenta palette centered on `#DE1A58`.
+
+
+## V4 — Persistent giant cat
+
+V2 could delay the giant cat for too long because its spawn depended on the pipe and coin state. V4 removes that problem completely.
 
 - The giant cat is created as soon as the run starts.
 - It remains on-screen instead of spawning once and disappearing.
@@ -98,3 +108,20 @@ Then enable **Settings → Pages → Deploy from a branch**, choose the branch (
 ## Reference
 
 The tap-to-fly interaction model was informed by the MIT-licensed `bxzex/flapbird` repository. The rendering, persistent giant-cat behavior, bite timing, power-ups and responsive systems in this project are custom implementations.
+
+
+## Project structure
+
+```text
+blackcat-flap/
+├── index.html
+├── favicon.svg
+├── README.md
+└── assets/
+    ├── css/
+    │   └── style.css
+    └── javascript/
+        └── game.js
+```
+
+The HTML file references `assets/css/style.css` and `assets/javascript/game.js`, so the project remains ready for static hosting on GitHub Pages.
